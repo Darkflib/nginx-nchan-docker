@@ -47,6 +47,34 @@ server {
         #location ~ /\.ht {
         #       deny all;
         #}
+
+ location ~ /sub/(\w+)$ {
+    #channel id is the word after /sub/
+    # GET /sub/foobar_baz will have the channel id set to 'foobar_baz'
+    # I hope you know your regular expressions...
+    nchan_subscriber;
+    nchan_channel_id $1; #first capture of the location match
+  }
+
+location ~ /pub/(\w+)$ {
+    #publisher endpoint
+    nchan_channel_id $1;
+    nchan_publisher;
+    #nchan_publisher_upstream_request /upstream_pub;
+  }
+
+  location = /upstream_pub {
+    proxy_pass http://29cbd0ef.ngrok.io/messages;
+    proxy_set_header X-Publisher-Type $nchan_publisher_type;
+    proxy_set_header X-Prev-Message-Id $nchan_prev_message_id;
+    proxy_set_header X-Channel-Id $nchan_channel_id;
+    proxy_set_header X-Original-URI $request_uri;
+  } 
+
+
+
+
+
 }
 
 
